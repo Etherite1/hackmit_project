@@ -27,7 +27,15 @@ export default function App() {
   const [stage, setStage] = useState("user_input");
 
   return (
-    <MathJaxContext>
+    <MathJaxContext
+      config={{
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']]
+        },
+        svg: {
+          fontCache: 'global'
+        }
+      }}>
       <main className="chat">
         <header>
           <h1>Math Helper</h1>
@@ -49,19 +57,24 @@ export default function App() {
           </p>
         </aside>
 
-        {messages?.map((message) => (
-          <article
-            key={message._id}
-            className={message.author === NAME ? "message-mine" : ""}
-          >
-            <div>{message.author}</div>
-            <p>
-              <MathJax>
-                {message.body}
-              </MathJax>
-            </p>
-          </article>
-        ))}
+        {messages?.map((message) => {
+          console.log('Message:', message); // This will log each message object
+          console.log('Message body:', message.body); // This will log just the body of each message
+          const  message_body = "There are 2009 positive integers less than 2010, of which 1005 are odd. If $\\frac{1}{n}$ is equal to a terminating decimal, then $n$ can only be divisible by 2 and 5. However, since we have the added restriction that $n$ is odd, $n$ must be a power of 5. There are five powers of 5 less than 2010. \\begin{align*}\n5^0 &= 1 \\\\\n5^1 &= 5 \\\\\n5^2 &= 25 \\\\\n5^3 &= 125 \\\\\n5^4 &= 625\n\\end{align*} Note that $5^5 = 3125$. Since there are five odd integers that satisfy our desired condition, the desired probability is $\\frac{5}{1005} = \\frac{1}{201}$. This is in simplest terms, so our answer is $1+201 = \\boxed{202}$.";
+          return (
+            <article
+              key={message._id}
+              className={message.author === NAME ? "message-mine" : ""}
+            >
+              <div>{message.author}</div>
+              <p>
+                <MathJax>
+                  {message_body}
+                </MathJax>
+              </p>
+            </article>
+          );
+        })}
         {stage == "user_input" && 
           <form
             onSubmit={async (e) => {
