@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@faker-js/faker": "^8.0.2",
+    "better-react-mathjax": "^2.0.3",
     "convex": "^1.16.0",
     "prettier": "3.2.5",
     "react": "^18.0.0",
