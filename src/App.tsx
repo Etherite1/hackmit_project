@@ -1,10 +1,19 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "./Button";
 
 // For demo purposes. In a real app, you'd have real user data.
 const NAME = "You"; 
+
+// Define the response type
+interface ProblemResponse {
+  problem: string;
+  level: string;
+  type: string;
+  solution: string;
+  id: string;
+}
 
 export default function App() {
   const messages = useQuery(api.messages.list);
@@ -14,6 +23,38 @@ export default function App() {
   const updateIncorrect = useMutation(api.messages.updateIncorrect);
 
   const [newMessageText, setNewMessageText] = useState("");
+
+  const fetchProblemData = useCallback(async (): Promise<ProblemResponse> => {
+    try {
+        const response = await fetch("http://127.0.0.1:5000", {
+            method: "GET",
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data: ProblemResponse = await response.json();
+        return data;
+    } catch (error) {
+        console.error("There was a problem fetching the data:", error);
+        throw error;
+    }
+  }, []); // Empty dependency array means this function is created once and never re-created
+
+  const [problemData, setProblemData] = useState({});
+
+  useEffect(() => {
+    fetchProblemData()
+    .then(setProblemData)
+    .catch(error => {
+      console.error("Error:", error);
+    });
+  }, [fetchProblemData]);
+  
+  useEffect(() => {
+    console.log(problemData);
+  }, [problemData]);
 
   useEffect(() => {
     // Make sure scrollTo works on button click in Chrome
