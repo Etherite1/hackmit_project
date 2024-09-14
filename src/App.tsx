@@ -27,35 +27,23 @@ export default function App() {
 
   const fetchProblemData = useCallback(async (): Promise<ProblemResponse> => {
     try {
-        const response = await fetch("http://127.0.0.1:5000", {
-            method: "GET",
-        });
+      const response = await fetch("http://127.0.0.1:5000", {
+          method: "GET",
+      });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+      if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-        const data: ProblemResponse = await response.json();
-        return data;
+      const data: ProblemResponse = await response.json();
+      return data;
     } catch (error) {
-        console.error("There was a problem fetching the data:", error);
-        throw error;
+      console.error("There was a problem fetching the data:", error);
+      throw error;
     }
   }, []); // Empty dependency array means this function is created once and never re-created
 
-  const [problemData, setProblemData] = useState({});
-
-  useEffect(() => {
-    fetchProblemData()
-    .then(setProblemData)
-    .catch(error => {
-      console.error("Error:", error);
-    });
-  }, [fetchProblemData]);
-  
-  useEffect(() => {
-    console.log(problemData);
-  }, [problemData]);
+  const [problemData, setProblemData] = useState({} as ProblemResponse);
 
   useEffect(() => {
     // Make sure scrollTo works on button click in Chrome
@@ -108,7 +96,10 @@ export default function App() {
             onSubmit={async (e) => {
               e.preventDefault();
               await sendMessage({ body: newMessageText, author: NAME });
+              const response = await fetchProblemData(); //pass in the new Message Text
+              await sendMessage({ body: response.problem, author: "Math Helper" });
               setNewMessageText("");
+              setProblemData(response)
               setStage("skip_reveal");
             }}
           >
@@ -142,7 +133,8 @@ export default function App() {
               height={3}
               width={10}
               text="Reveal Answer"
-              onClick={() => {
+              onClick={async () => {
+                await sendMessage({ body: problemData.solution, author: "Math Helper" });
                 setStage("right_wrong");
               }}
             />
@@ -187,7 +179,7 @@ export default function App() {
             <Button
               height={3}
               width={10}
-              text="New query"
+              text="New Query"
               onClick={() => {
                 setStage("user_input");
               }}
