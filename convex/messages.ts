@@ -22,12 +22,14 @@ export const uuid_list = query({
 // Add a mutation to update the uuid_list
 export const updateUuidList = mutation({
   args: { uuids: v.array(v.string()) },
-  handler: async (ctx, { uuids }) => {
-    const allIds = await getAllIds(ctx, {});
+  handler: async (ctx, args) => {
+    const allIds = await getAllIdsUUIDList(ctx, {});
+    
     for (const id of allIds) {
       await ctx.db.delete(id);
     }
-    await ctx.db.insert("uuids", { uuid_list: uuids });
+    console.log("inserting", args.uuids);
+    await ctx.db.insert("uuids", { uuid_list: args.uuids });
   },
 });
 
@@ -80,6 +82,13 @@ export const send = mutation({
 export const getAllIds = internalQuery({
   handler: async (ctx) => {
     const allDocs = await ctx.db.query("messages").collect();
+    return allDocs.map(doc => doc._id);
+  },
+});
+
+export const getAllIdsUUIDList = internalQuery({
+  handler: async (ctx) => {
+    const allDocs = await ctx.db.query("uuids").collect();
     return allDocs.map(doc => doc._id);
   },
 });

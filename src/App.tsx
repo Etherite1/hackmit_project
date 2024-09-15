@@ -60,7 +60,7 @@ export default function App() {
   const [difficulty, setDifficulty] = useState("All");
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const fetchRelevantProblems = useCallback(async (): Promise<string[]> => {
+  const fetchRelevantProblems = async (): Promise<string[]> => {
     const response = await fetch("http://127.0.0.1:5001", {
       method: "POST",
       headers: {
@@ -76,18 +76,21 @@ export default function App() {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data: string[] = await response.json();
+    console.log("new", data);
     await updateUuidList({uuids: data});
+    console.log("updated", problemIds);
     return data;
-  }, []);
+  };
 
-  const fetchProblemData = useCallback(async (): Promise<ProblemResponse> => {
+  const fetchProblemData = async (): Promise<ProblemResponse> => {
     // don't pass in problem_id, just get the next one
-    while(solvedList?.includes(problemIds![currentIndex])) {
-      setCurrentIndex(currentIndex + 1);
-    }
-    await updateSolvedList({uuid: problemIds![currentIndex]});
+    console.log(">>>", problemIds)
+    // while(solvedList?.includes(problemIds![currentIndex])) {
+    //   setCurrentIndex(currentIndex + 1);
+    // }
+    // await updateSolvedList({uuid: problemIds![currentIndex]});
     try { // fetch from server
-      const response = await fetch("http://127.0.0.1:5000", {
+      const response = await fetch("http://127.0.0.1:5000/get_problem", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",  // Specify that you're sending JSON
@@ -102,13 +105,12 @@ export default function App() {
       }
 
       const data: ProblemResponse = await response.json();
-      // return data;
-      return {problem: "a", level: "b", type: "c", solution: "d", id: "e"};
+      return data;
     } catch (error) {
       console.error("There was a problem fetching the data:", error);
       throw error;
     }
-  }, [problemIds]); // Empty dependency array means this function is created once and never re-created
+  };
 
   const [problemData, setProblemData] = useState({} as ProblemResponse);
 
@@ -226,10 +228,9 @@ export default function App() {
               await sendMessage({ body: newMessageText, author: NAME });
               await fetchRelevantProblems();
               const response = await fetchProblemData(); //pass in the new Message Text
-              console.log(response);
+              setProblemData(response);
               await sendMessage({ body: response.problem, author: "Math Helper" });
               setNewMessageText("");
-              setProblemData(response)
               setStage("skip_reveal");
             }}
           >

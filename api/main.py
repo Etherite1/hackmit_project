@@ -19,6 +19,7 @@ def query_embedding():
     engine = create_engine(CONNECTION_STRING)
 
     data = request.get_json()  # Use Flask's request object to get JSON data
+    print("dadadadad", data)
     query = data.get('query', '')  # Safely get 'query' from the JSON data
     category = data.get('category', '')
     difficulty = data.get('difficulty', '')
@@ -26,6 +27,7 @@ def query_embedding():
     url = 'http://127.0.0.1:5000/'
     headers = {'Content-Type': 'application/json'}
     data = {'query': query}
+    print("quququq", query)
     response = requests.post(url, headers=headers, data=json.dumps(data))
     search_vector = json.loads(response.text)
     
