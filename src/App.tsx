@@ -16,10 +16,6 @@ interface ProblemResponse {
   id: string;
 }
 
-interface relevantProblemResponse {
-  uuids: string[];
-}
-
 const categoryOptions = [
   { value: 'All', label: 'All' },
   { value: 'Intermediate Algebra', label: 'Intermediate Algebra' },
@@ -55,11 +51,27 @@ export default function App() {
   const [newMessageText, setNewMessageText] = useState("");
   const [category, setCategory] = useState("All");
   const [difficulty, setDifficulty] = useState("All");
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [hintDisabled, setHintDisabled] = useState(false);
 
-  useEffect(() => {
-    
-  }, [])
+  const handleHint = async (): Promise<string> => {
+    const response = await fetch("http://127.0.0.1:5001/hint", {
+      method: "POST",
+      headers: {
+          "Content-Type": "application/json",  // Specify that you're sending JSON
+      },
+      body: JSON.stringify({
+          problem
+      })
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const text: string = await response.json();
+    await sendMessage({ body: text, author: "Math Helper" });
+    setHintDisabled(true);
+    return text;
+  }
 
   const fetchRelevantProblem = async (next: boolean): Promise<ProblemResponse> => {
     let response;
@@ -88,33 +100,6 @@ export default function App() {
     console.log("new", data, problem);
     return data
   };
-
-  const fetchProblemData = async (problem_id: string): Promise<ProblemResponse> => {
-    try { // fetch from server
-      console.log("problem id", problem_id);
-      const response = await fetch("http://127.0.0.1:5000/get_problem", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",  // Specify that you're sending JSON
-        },
-        body: JSON.stringify({
-            problem_id,
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data: ProblemResponse = await response.json();
-      return data;
-    } catch (error) {
-      console.error("There was a problem fetching the data:", error);
-      throw error;
-    }
-  };
-
-  const [problemData, setProblemData] = useState({} as ProblemResponse);
 
   useEffect(() => {
     // Make sure scrollTo works on button click in Chrome
@@ -250,9 +235,19 @@ export default function App() {
             <Button
               height={3}
               width={10}
+              text="Hint"
+              onClick={() => {
+                handleHint();
+              }}
+              disabled={hintDisabled}
+            />
+            <Button
+              height={3}
+              width={10}
               text="New Query"
               onClick={() => {
                 setStage("user_input");
+                setHintDisabled(false);
               }}
             />
             <Button
@@ -262,6 +257,7 @@ export default function App() {
               onClick={async () => {
                 await fetchRelevantProblem(true);
                 setStage("skip_reveal");
+                setHintDisabled(false);
               }}
             />
             <Button
