@@ -417,6 +417,7 @@ button:disabled {
   margin: 0;
   font-size: 1.2rem;
   font-weight: bold;
+  color: black;
 }
 
 aside.clear {
@@ -458,7 +459,7 @@ aside.clear button {
   display: block;
   margin-bottom: 5px;
   font-weight: bold;
-  color: var(--primary-text);
+  color: black;
 }
 
 /* Styling for select elements */
