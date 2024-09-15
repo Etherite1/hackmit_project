@@ -22,6 +22,8 @@ export default function App() {
   const sendMessage = useMutation(api.messages.send);
   const updateCorrect = useMutation(api.messages.updateCorrect);
   const updateIncorrect = useMutation(api.messages.updateIncorrect);
+  const resetStats = useMutation(api.messages.resetStats);
+  const deleteAllMessages = useMutation(api.messages.deleteAllRecords);
 
   const [newMessageText, setNewMessageText] = useState("");
 
@@ -32,7 +34,7 @@ export default function App() {
       });
 
       if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data: ProblemResponse = await response.json();
@@ -54,21 +56,72 @@ export default function App() {
 
   // 4 stages: user_input, skip_reveal, right_wrong, similar_new
   const [stage, setStage] = useState("user_input");
+  const [category, setCategory] = useState("All");
+  const [difficulty, setDifficulty] = useState("All");
+
+  const categoryOptions = [
+    { value: 'All', label: 'All' },
+    { value: 'Option 1', label: 'Option 1' },
+    { value: 'Option 2', label: 'Option 2' },
+    { value: 'Option 3', label: 'Option 3' },
+  ];
+  
+  const difficultyOptions = [
+    { value: 'All', label: 'All' },
+    { value: 'Option 1', label: 'Option 1' },
+    { value: 'Option 2', label: 'Option 2' },
+    { value: 'Option 3', label: 'Option 3' },
+  ];
+
+  const handleClearAllMessages = async () => {
+    try {
+      await deleteAllMessages();
+      // Optionally, you can add some user feedback here
+      console.log("All messages have been deleted");
+      // You might want to reset some state here
+      setNewMessageText("");
+      setCategory("All");
+      setDifficulty("All");
+      setStage("user_input");
+    } catch (error) {
+      console.error("Error deleting messages:", error);
+    }
+  };
 
   return (
-    <MathJaxContext
-      config={{
-        tex: {
-          inlineMath: [['$', '$'], ['\\(', '\\)']]
-        },
-        svg: {
-          fontCache: 'global'
-        }
-      }}>
+    <MathJaxContext config={{ tex: { inlineMath: [["$", "$"], ["\\(", "\\)"]] } }}>
       <main className="chat">
         <header>
           <h1>Math Helper</h1>
         </header>
+
+        <aside className="filters">
+          <label htmlFor="category-select">Category</label>
+          <select
+            id="category-select"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            {categoryOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+
+          <label htmlFor="difficulty-select">Difficulty</label>
+          <select
+            id="difficulty-select"
+            value={difficulty}
+            onChange={(e) => setDifficulty(e.target.value)}
+          >
+            {difficultyOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </aside>
 
         <aside className="stats">
           <p>Correct Answers: {accuracy?.[0]?.correctAnswers ?? 0}</p>
@@ -86,10 +139,25 @@ export default function App() {
           </p>
         </aside>
 
+        <aside className="clear">
+          <Button
+            height={3}
+            width={5}
+            text="Clear History"
+            onClick={handleClearAllMessages}
+          />
+          <Button
+            height={3}
+            width={5}
+            text="Clear Stats"
+            onClick={() => {
+              resetStats();
+            }}
+          />
+        </aside>
+
+
         {messages?.map((message) => {
-          console.log('Message:', message); // This will log each message object
-          console.log('Message body:', message.body); // This will log just the body of each message
-          const  message_body = "There are 2009 positive integers less than 2010, of which 1005 are odd. If $\\frac{1}{n}$ is equal to a terminating decimal, then $n$ can only be divisible by 2 and 5. However, since we have the added restriction that $n$ is odd, $n$ must be a power of 5. There are five powers of 5 less than 2010. \\begin{align*}\n5^0 &= 1 \\\\\n5^1 &= 5 \\\\\n5^2 &= 25 \\\\\n5^3 &= 125 \\\\\n5^4 &= 625\n\\end{align*} Note that $5^5 = 3125$. Since there are five odd integers that satisfy our desired condition, the desired probability is $\\frac{5}{1005} = \\frac{1}{201}$. This is in simplest terms, so our answer is $1+201 = \\boxed{202}$.";
           return (
             <article
               key={message._id}
@@ -98,11 +166,11 @@ export default function App() {
               <div>{message.author}</div>
               <p>
                 <MathJax>
-                  {message_body}
+                  {message.body}
                 </MathJax>
               </p>
             </article>
-          );
+          )
         })}
         {stage == "user_input" && 
           <form
