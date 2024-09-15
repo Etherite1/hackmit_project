@@ -21,15 +21,15 @@ export const uuid_list = query({
 
 // Add a mutation to update the uuid_list
 export const updateUuidList = mutation({
-  args: { uuids: v.array(v.string()) },
+  args: { uuid_list: v.array(v.string()) },
   handler: async (ctx, args) => {
     const allIds = await getAllIdsUUIDList(ctx, {});
     
     for (const id of allIds) {
       await ctx.db.delete(id);
     }
-    console.log("inserting", args.uuids);
-    await ctx.db.insert("uuids", { uuid_list: args.uuids });
+    console.log("inserting", args.uuid_list);
+    await ctx.db.insert("uuids", { uuid_list: args.uuid_list });
   },
 });
 
