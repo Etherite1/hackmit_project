@@ -8,5 +8,8 @@ dist
 .env.local
 
 iris/
+ivs/
 
 .gitignore
+
+api/embeddings-1.csv
