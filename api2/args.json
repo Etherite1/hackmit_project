@@ -1,0 +1,10 @@
+{"do_encode": true,
+  "output_dir": "temp_out_poster",
+  "model_name_or_path": "model_math",
+  "per_device_eval_batch_size": 64,
+  "dataset_name": "Tevatron/msmarco-passage",
+  "encode_in_path": "query.parquet",
+  "encode_is_qry": true,
+  "q_max_len": 128,
+  "encoded_save_path": "query.pkl"
+}
