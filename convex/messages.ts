@@ -11,6 +11,52 @@ export const list = query({
   },
 });
 
+export const uuid_list = query({
+  args: {},
+  handler: async (ctx) => {
+    const uuidDoc = await ctx.db.query("uuids").first();
+    return uuidDoc?.uuid_list || [];
+  },
+});
+
+// Add a mutation to update the uuid_list
+export const updateUuidList = mutation({
+  args: { uuids: v.array(v.string()) },
+  handler: async (ctx, { uuids }) => {
+    const allIds = await getAllIds(ctx, {});
+    for (const id of allIds) {
+      await ctx.db.delete(id);
+    }
+    await ctx.db.insert("uuids", { uuid_list: uuids });
+  },
+});
+
+export const solvedList = query({
+  args: {},
+  handler: async (ctx) => {
+    const solvedDoc = await ctx.db.query("solved").first();
+    return solvedDoc?.solved_list || [];
+  },
+});
+
+// Updated mutation to append an item to the solved list
+export const updateSolvedList = mutation({
+  args: { uuid: v.string() },
+  handler: async (ctx, { uuid }) => {
+    const solvedDoc = await ctx.db.query("solved").first();
+    
+    if (solvedDoc) {
+      // Append the new UUID to the existing list
+      await ctx.db.patch(solvedDoc._id, {
+        solved_list: [...solvedDoc.solved_list, uuid]
+      });
+    } else {
+      // If no document exists, create a new one with the UUID
+      await ctx.db.insert("solved", { solved_list: [uuid] });
+    }
+  },
+});
+
 export const list_accuracy = query({
   args: {},
   handler: async (ctx) => {

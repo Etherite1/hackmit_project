@@ -16,8 +16,36 @@ interface ProblemResponse {
   id: string;
 }
 
+interface relevantProblemResponse {
+  uuids: string[];
+}
+
+const categoryOptions = [
+  { value: 'All', label: 'All' },
+  { value: 'Intermediate Algebra', label: 'Intermediate Algebra' },
+  { value: 'Precalculus', label: 'Precalculus' },
+  { value: 'Algebra', label: 'Algebra' },
+  { value: 'Counting & Probability', label: 'Counting & Probability' },
+  { value: 'Prealgebra', label: 'Prealgebra' },
+  { value: 'Number Theory', label: 'Number Theory' },
+  { value: 'Geometry', label: 'Geometry' },
+];
+
+const difficultyOptions = [
+  { value: 'All', label: 'All' },
+  { value: 'Level 1', label: 'Level 1' },
+  { value: 'Level 2', label: 'Level 2' },
+  { value: 'Level 3', label: 'Level 3' },
+  { value: 'Level 4', label: 'Level 4' },
+  { value: 'Level 5', label: 'Level 5' },
+];
+
 export default function App() {
   const messages = useQuery(api.messages.list);
+  const problemIds = useQuery(api.messages.uuid_list);
+  const updateUuidList = useMutation(api.messages.updateUuidList);
+  const solvedList = useQuery(api.messages.solvedList);
+  const updateSolvedList = useMutation(api.messages.updateSolvedList);
   const accuracy = useQuery(api.messages.list_accuracy);
   const sendMessage = useMutation(api.messages.send);
   const updateCorrect = useMutation(api.messages.updateCorrect);
@@ -25,12 +53,48 @@ export default function App() {
   const resetStats = useMutation(api.messages.resetStats);
   const deleteAllMessages = useMutation(api.messages.deleteAllRecords);
 
+  // 4 stages: user_input, skip_reveal, right_wrong, similar_new
+  const [stage, setStage] = useState("user_input");
   const [newMessageText, setNewMessageText] = useState("");
+  const [category, setCategory] = useState("All");
+  const [difficulty, setDifficulty] = useState("All");
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const fetchRelevantProblems = useCallback(async (): Promise<string[]> => {
+    const response = await fetch("http://127.0.0.1:5001", {
+      method: "POST",
+      headers: {
+          "Content-Type": "application/json",  // Specify that you're sending JSON
+      },
+      body: JSON.stringify({
+          query: newMessageText,
+          difficulty: difficulty,
+          category: category,
+      })
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data: string[] = await response.json();
+    await updateUuidList({uuids: data});
+    return data;
+  }, []);
 
   const fetchProblemData = useCallback(async (): Promise<ProblemResponse> => {
-    try {
+    // don't pass in problem_id, just get the next one
+    while(solvedList?.includes(problemIds![currentIndex])) {
+      setCurrentIndex(currentIndex + 1);
+    }
+    await updateSolvedList({uuid: problemIds![currentIndex]});
+    try { // fetch from server
       const response = await fetch("http://127.0.0.1:5000", {
-          method: "GET",
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",  // Specify that you're sending JSON
+        },
+        body: JSON.stringify({
+            problem_id: problemIds![currentIndex],
+        })
       });
 
       if (!response.ok) {
@@ -38,12 +102,13 @@ export default function App() {
       }
 
       const data: ProblemResponse = await response.json();
-      return data;
+      // return data;
+      return {problem: "a", level: "b", type: "c", solution: "d", id: "e"};
     } catch (error) {
       console.error("There was a problem fetching the data:", error);
       throw error;
     }
-  }, []); // Empty dependency array means this function is created once and never re-created
+  }, [problemIds]); // Empty dependency array means this function is created once and never re-created
 
   const [problemData, setProblemData] = useState({} as ProblemResponse);
 
@@ -53,25 +118,7 @@ export default function App() {
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
     }, 0);
   }, [messages]);
-
-  // 4 stages: user_input, skip_reveal, right_wrong, similar_new
-  const [stage, setStage] = useState("user_input");
-  const [category, setCategory] = useState("All");
-  const [difficulty, setDifficulty] = useState("All");
-
-  const categoryOptions = [
-    { value: 'All', label: 'All' },
-    { value: 'Option 1', label: 'Option 1' },
-    { value: 'Option 2', label: 'Option 2' },
-    { value: 'Option 3', label: 'Option 3' },
-  ];
   
-  const difficultyOptions = [
-    { value: 'All', label: 'All' },
-    { value: 'Option 1', label: 'Option 1' },
-    { value: 'Option 2', label: 'Option 2' },
-    { value: 'Option 3', label: 'Option 3' },
-  ];
 
   const handleClearAllMessages = async () => {
     try {
@@ -177,7 +224,9 @@ export default function App() {
             onSubmit={async (e) => {
               e.preventDefault();
               await sendMessage({ body: newMessageText, author: NAME });
+              await fetchRelevantProblems();
               const response = await fetchProblemData(); //pass in the new Message Text
+              console.log(response);
               await sendMessage({ body: response.problem, author: "Math Helper" });
               setNewMessageText("");
               setProblemData(response)

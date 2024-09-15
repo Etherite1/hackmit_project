@@ -61,6 +61,7 @@ def populate_db():
         with conn.begin():
             sql = text("""
                 SELECT TOP 3 * FROM query_info 
+                WHERE difficulty == "Level 5"
             """)
 
         results = conn.execute(sql).fetchall()

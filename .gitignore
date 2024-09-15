@@ -13,3 +13,5 @@ ivs/
 .gitignore
 
 api/embeddings-1.csv
+
+api/inv

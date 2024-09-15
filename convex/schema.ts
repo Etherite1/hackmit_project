@@ -6,6 +6,12 @@ export default defineSchema({
     author: v.string(),
     body: v.string(),
   }),
+  uuids: defineTable({
+    uuid_list: v.array(v.string()),
+  }),
+  solved: defineTable({
+    solved_list: v.array(v.string()),
+  }),
   users: defineTable({
     // userId: v.id("messages"),        
     correctAnswers: v.number(), 
