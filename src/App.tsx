@@ -42,10 +42,6 @@ const difficultyOptions = [
 
 export default function App() {
   const messages = useQuery(api.messages.list);
-  const problemIds = useQuery(api.messages.uuid_list);
-  const updateUuidList = useMutation(api.messages.updateUuidList);
-  const solvedList = useQuery(api.messages.solvedList);
-  const updateSolvedList = useMutation(api.messages.updateSolvedList);
   const accuracy = useQuery(api.messages.list_accuracy);
   const sendMessage = useMutation(api.messages.send);
   const updateCorrect = useMutation(api.messages.updateCorrect);
@@ -55,48 +51,54 @@ export default function App() {
 
   // 4 stages: user_input, skip_reveal, right_wrong, similar_new
   const [stage, setStage] = useState("user_input");
+  const [problem, setProblem] = useState({} as ProblemResponse);
   const [newMessageText, setNewMessageText] = useState("");
   const [category, setCategory] = useState("All");
   const [difficulty, setDifficulty] = useState("All");
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const fetchRelevantProblems = async (): Promise<string[]> => {
-    const response = await fetch("http://127.0.0.1:5001", {
-      method: "POST",
-      headers: {
-          "Content-Type": "application/json",  // Specify that you're sending JSON
-      },
-      body: JSON.stringify({
-          query: newMessageText,
-          difficulty: difficulty,
-          category: category,
-      })
-    });
+  useEffect(() => {
+    
+  }, [])
+
+  const fetchRelevantProblem = async (next: boolean): Promise<ProblemResponse> => {
+    let response;
+    if (next) {
+      response = await fetch("http://127.0.0.1:5001/next_result")
+    } else {
+      response = await fetch("http://127.0.0.1:5001", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",  // Specify that you're sending JSON
+        },
+        body: JSON.stringify({
+            query: newMessageText,
+            difficulty: difficulty,
+            category: category,
+        })
+      });
+    }
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const data: string[] = await response.json();
-    console.log("new", data);
-    await updateUuidList({uuids: data});
-    console.log("updated", problemIds);
-    return data;
+    const data: ProblemResponse = await response.json();
+    setProblem(data)
+    if(!next) await sendMessage({ body: newMessageText, author: NAME });
+    await sendMessage({ body: data.problem, author: "Math Helper" });
+    console.log("new", data, problem);
+    return data
   };
 
-  const fetchProblemData = async (): Promise<ProblemResponse> => {
-    // don't pass in problem_id, just get the next one
-    console.log(">>>", problemIds)
-    // while(solvedList?.includes(problemIds![currentIndex])) {
-    //   setCurrentIndex(currentIndex + 1);
-    // }
-    // await updateSolvedList({uuid: problemIds![currentIndex]});
+  const fetchProblemData = async (problem_id: string): Promise<ProblemResponse> => {
     try { // fetch from server
+      console.log("problem id", problem_id);
       const response = await fetch("http://127.0.0.1:5000/get_problem", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",  // Specify that you're sending JSON
         },
         body: JSON.stringify({
-            problem_id: problemIds![currentIndex],
+            problem_id,
         })
       });
 
@@ -225,11 +227,12 @@ export default function App() {
           <form
             onSubmit={async (e) => {
               e.preventDefault();
-              await sendMessage({ body: newMessageText, author: NAME });
-              await fetchRelevantProblems();
-              const response = await fetchProblemData(); //pass in the new Message Text
-              setProblemData(response);
-              await sendMessage({ body: response.problem, author: "Math Helper" });
+              // await sendMessage({ body: newMessageText, author: NAME });
+              await fetchRelevantProblem(false);
+              // const response = await fetchProblemData(problem); //pass in the new Message Text
+              // setProblemData(response);
+              // console.log("fetch response", response)
+              // await sendMessage({ body: response.problem, author: "Math Helper" });
               setNewMessageText("");
               setStage("skip_reveal");
             }}
@@ -256,7 +259,8 @@ export default function App() {
               height={3}
               width={10}
               text="Similar Problem"
-              onClick={() => {
+              onClick={async () => {
+                await fetchRelevantProblem(true);
                 setStage("skip_reveal");
               }}
             />
@@ -265,7 +269,7 @@ export default function App() {
               width={10}
               text="Reveal Answer"
               onClick={async () => {
-                await sendMessage({ body: problemData.solution, author: "Math Helper" });
+                await sendMessage({ body: problem.solution, author: "Math Helper" });
                 setStage("right_wrong");
               }}
             />
@@ -303,7 +307,8 @@ export default function App() {
               height={3}
               width={10}
               text="Similar Problem"
-              onClick={() => {
+              onClick={async () => {
+                await fetchRelevantProblem(true);
                 setStage("skip_reveal");
               }}
             />

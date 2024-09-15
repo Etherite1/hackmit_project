@@ -8,8 +8,17 @@ import json
 app = Flask(__name__)
 CORS(app)  # This will enable CORS for all routes
 
+current_results = []
+current_index = 0
+
+MATH_dataset = {}
+with open("MATH_dataset.json") as f:
+    MATH_dataset = json.load(f)
+
 @app.route("/", methods=['POST'])
 def query_embedding():
+    global current_results
+    global current_index
     username = 'demo'
     password = 'demo'
     hostname = os.getenv('IRIS_HOSTNAME', 'localhost')
@@ -69,8 +78,17 @@ def query_embedding():
     ret = []
     for res in results:
         ret.append(res[0])
+    current_results = ret
+    current_index = 0
+    print("response: ", current_results[current_index])
+    return json.dumps(MATH_dataset[current_results[current_index]])
 
-    return json.dumps(ret)
+@app.route("/next_result")
+def get_next_result():
+    global current_index
+    global current_results
+    current_index += 1
+    return json.dumps(MATH_dataset[current_results[current_index]])
 
 if __name__ == "__main__":
     app.run(debug=True)
