@@ -402,7 +402,7 @@ button:disabled {
 
 .stats {
   position: fixed;
-  top: 20px;
+  top: 100px;
   right: 20px;
   background-color: #d0def4; 
   padding: 10px;
@@ -411,12 +411,21 @@ button:disabled {
   text-align: right; /* Align text to the right */
   z-index: 1000; /* Make sure it's above other elements */
   font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-
-
 }
 
 .stats p {
   margin: 0;
   font-size: 1.2rem;
   font-weight: bold;
+}
+
+aside.clear {
+  position: fixed;
+  top: 200px;
+  right: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Optional drop shadow */
+  text-align: right; /* Align text to the right */
+  z-index: 1000; /* Make sure it's above other elements */
+  font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }

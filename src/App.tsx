@@ -32,7 +32,7 @@ export default function App() {
       });
 
       if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data: ProblemResponse = await response.json();
@@ -56,7 +56,7 @@ export default function App() {
   const [stage, setStage] = useState("user_input");
 
   return (
-    <MathJaxContext>
+    <MathJaxContext config={{ tex: { inlineMath: [["$", "$"], ["\\(", "\\)"]] } }}>
       <main className="chat">
         <header>
           <h1>Math Helper</h1>
@@ -78,19 +78,33 @@ export default function App() {
           </p>
         </aside>
 
-        {messages?.map((message) => (
-          <article
-            key={message._id}
-            className={message.author === NAME ? "message-mine" : ""}
-          >
-            <div>{message.author}</div>
-            <p>
-              <MathJax>
-                {message.body}
-              </MathJax>
-            </p>
-          </article>
-        ))}
+        <aside className="clear">
+          <Button
+            height={3}
+            width={5}
+            text="Clear History"
+            onClick={() => {
+              setNewMessageText("");
+              setStage("user_input");
+            }}
+          />
+        </aside>
+
+        {messages?.map((message) => {
+          return (
+            <article
+              key={message._id}
+              className={message.author === NAME ? "message-mine" : ""}
+            >
+              <div>{message.author}</div>
+              <p>
+                <MathJax>
+                  {message.body}
+                </MathJax>
+              </p>
+            </article>
+          )
+        })}
         {stage == "user_input" && 
           <form
             onSubmit={async (e) => {

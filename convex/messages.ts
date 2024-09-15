@@ -1,4 +1,4 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 
 export const list = query({
@@ -29,6 +29,28 @@ export const send = mutation({
     await ctx.db.insert("messages", { body, author });
   },
 });
+
+// First, create a query to get all document IDs
+export const getAllIds = internalQuery({
+  handler: async (ctx) => {
+    const allDocs = await ctx.db.query("messages").collect();
+    return allDocs.map(doc => doc._id);
+  },
+});
+
+// Then, create a mutation to delete all documents
+export const deleteAllRecords = mutation({
+  handler: async (ctx) => {
+    const allIds = await getAllIds(ctx, {});
+    
+    for (const id of allIds) {
+      await ctx.db.delete(id);
+    }
+    
+    return `Deleted ${allIds.length} records`;
+  },
+});
+
 export const updateCorrect = mutation({
   handler: async (ctx) => {
     // Query the first (and only) user
