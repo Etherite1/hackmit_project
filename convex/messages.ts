@@ -68,6 +68,7 @@ export const updateCorrect = mutation({
     }
   },
 });
+
 export const updateIncorrect = mutation({
   handler: async (ctx) => {
     // Query the first (and only) user
@@ -82,6 +83,22 @@ export const updateIncorrect = mutation({
         correctAnswers: 0,
         incorrectAnswers: 1, 
       });
+    }
+  },
+});
+
+export const resetStats = mutation({
+  handler: async (ctx) => {
+    // Query the first (and only) user
+    const user = await ctx.db.query("users").first();
+
+    if (user) {
+      await ctx.db.patch(user._id, {
+        correctAnswers: 0,
+        incorrectAnswers: 0,
+      });
+    } else {
+      throw new Error("Unable to find user");
     }
   },
 });

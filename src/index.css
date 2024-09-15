@@ -424,8 +424,90 @@ aside.clear {
   top: 200px;
   right: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Optional drop shadow */
-  text-align: right; /* Align text to the right */
-  z-index: 1000; /* Make sure it's above other elements */
-  font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+aside.clear button {
+  width: 120px; /* Adjust the width as needed */
+  padding: 10px;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Styling for the filters container */
+.filters {
+  position: fixed;
+  top: 100px;
+  left: 20px;
+  background-color: #d0def4; 
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  width: 200px; /* Adjust this value as needed */
+}
+
+/* Styling for label elements */
+.filters label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: var(--primary-text);
+}
+
+/* Styling for select elements */
+.filters select {
+  display: block;
+  width: 100%;
+  height: 3rem;
+  padding: 0 1rem;
+  margin-bottom: 15px;
+  font-size: 1rem;
+  font-family: inherit;
+  color: white;
+  background-color: var(--primary);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem top 50%;
+  background-size: 0.65rem auto;
+  transition: background-color 0.3s ease;
+}
+
+.filters select:hover {
+  background-color: #d34d0f;
+}
+
+.filters select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.filters select:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Style for select options */
+.filters select option {
+  background-color: white;
+  color: var(--primary-text);
+}
+
+@media (prefers-color-scheme: dark) {
+  .filters select option {
+    background-color: var(--secondary-background);
+    color: var(--primary-text);
+  }
 }

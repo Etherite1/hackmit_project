@@ -22,6 +22,8 @@ export default function App() {
   const sendMessage = useMutation(api.messages.send);
   const updateCorrect = useMutation(api.messages.updateCorrect);
   const updateIncorrect = useMutation(api.messages.updateIncorrect);
+  const resetStats = useMutation(api.messages.resetStats);
+  const deleteAllMessages = useMutation(api.messages.deleteAllRecords);
 
   const [newMessageText, setNewMessageText] = useState("");
 
@@ -54,6 +56,37 @@ export default function App() {
 
   // 4 stages: user_input, skip_reveal, right_wrong, similar_new
   const [stage, setStage] = useState("user_input");
+  const [category, setCategory] = useState("All");
+  const [difficulty, setDifficulty] = useState("All");
+
+  const categoryOptions = [
+    { value: 'All', label: 'All' },
+    { value: 'Option 1', label: 'Option 1' },
+    { value: 'Option 2', label: 'Option 2' },
+    { value: 'Option 3', label: 'Option 3' },
+  ];
+  
+  const difficultyOptions = [
+    { value: 'All', label: 'All' },
+    { value: 'Option 1', label: 'Option 1' },
+    { value: 'Option 2', label: 'Option 2' },
+    { value: 'Option 3', label: 'Option 3' },
+  ];
+
+  const handleClearAllMessages = async () => {
+    try {
+      await deleteAllMessages();
+      // Optionally, you can add some user feedback here
+      console.log("All messages have been deleted");
+      // You might want to reset some state here
+      setNewMessageText("");
+      setCategory("All");
+      setDifficulty("All");
+      setStage("user_input");
+    } catch (error) {
+      console.error("Error deleting messages:", error);
+    }
+  };
 
   return (
     <MathJaxContext config={{ tex: { inlineMath: [["$", "$"], ["\\(", "\\)"]] } }}>
@@ -61,6 +94,34 @@ export default function App() {
         <header>
           <h1>Math Helper</h1>
         </header>
+
+        <aside className="filters">
+          <label htmlFor="category-select">Category</label>
+          <select
+            id="category-select"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            {categoryOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+
+          <label htmlFor="difficulty-select">Difficulty</label>
+          <select
+            id="difficulty-select"
+            value={difficulty}
+            onChange={(e) => setDifficulty(e.target.value)}
+          >
+            {difficultyOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </aside>
 
         <aside className="stats">
           <p>Correct Answers: {accuracy?.[0]?.correctAnswers ?? 0}</p>
@@ -83,12 +144,18 @@ export default function App() {
             height={3}
             width={5}
             text="Clear History"
+            onClick={handleClearAllMessages}
+          />
+          <Button
+            height={3}
+            width={5}
+            text="Clear Stats"
             onClick={() => {
-              setNewMessageText("");
-              setStage("user_input");
+              resetStats();
             }}
           />
         </aside>
+
 
         {messages?.map((message) => {
           return (
